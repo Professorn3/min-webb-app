@@ -269,7 +269,7 @@ app.get("/", (req, res) => {
   </div>
 
   <div class="wrap">
-    <div class="badge"><span class="dot"></span> Live • ${esc(now)} • Reverse proxy: <span class="hl">Nginx</span> <span class="spark"></span></div>
+    <div class="badge"><span class="dot"></span> Live • <span id="clock">${esc(now)}</span> • Reverse proxy: <span class="hl">Nginx</span> <span class="spark"></span></div>
 
     <header>
       <h1>Välkommen till min Hello World 👋</h1>
@@ -407,6 +407,19 @@ user-agent:      ${esc(req.headers["user-agent"] || "—")}
       }, totalMs);
     });
   </script>
+  <script>
+  function updateClock() {
+    const el = document.getElementById("clock");
+    if (!el) return;
+
+    el.textContent = new Date().toLocaleString("sv-SE", {
+      timeZone: "Europe/Stockholm"
+    });
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
 </body>
 </html>`);
 });
