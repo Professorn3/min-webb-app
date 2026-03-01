@@ -204,11 +204,7 @@ app.get("/", (req, res) => {
 </head>
 <body>
   <div class="wrap">
-    <div class="badge"><span class="dot"></span> <div class="badge">
-  <span class="dot"></span>  Live • <span id="clock">${esc(now)}</span> • Reverse proxy:
-  <span class="hl">Nginx</span> <span class="spark"></span>
-</div>
-
+    <div class="badge"><span class="dot"></span>  Live • <span id="clock">${esc(now)}</span> • Reverse proxy: <span class="hl">Nginx</span> <span class="spark"></span></div>
 
     <header>
       <h1>Välkommen till min Hello World 👋</h1>
