@@ -299,14 +299,26 @@ remote-address:  ${esc(req.socket.remoteAddress || "—")}
 user-agent:      ${esc(req.headers["user-agent"] || "—")}
           </div>
 
-          <footer>
-            <span>Repo: professorn3/min-webb-app</span>
-            <span>Port: 3000 (intern)</span>
           </footer>
         </div>
       </aside>
     </div>
   </div>
+
+  <script>
+    function updateClock() {
+      const el = document.getElementById("clock");
+      if (!el) return;
+
+      el.textContent = new Date().toLocaleString("sv-SE", {
+        timeZone: "Europe/Stockholm"
+      });
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+
 </body>
 </html>`);
 });
