@@ -200,9 +200,74 @@ app.get("/", (req, res) => {
       border-radius: 4px;
       transform: rotate(20deg);
     }
+
+    /* --- Garage door intro --- */
+    .wrap {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.6s ease;
+    }
+    .wrap.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .door {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: linear-gradient(180deg, rgba(10,14,28,1), rgba(7,10,20,1));
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .door__panel {
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          rgba(255,255,255,.10) 0px,
+          rgba(255,255,255,.10) 2px,
+          rgba(0,0,0,.18) 18px,
+          rgba(0,0,0,.18) 24px
+        ),
+        radial-gradient(900px 600px at 50% 20%, rgba(124,92,255,.25), transparent 60%),
+        radial-gradient(900px 600px at 50% 80%, rgba(43,231,255,.18), transparent 60%);
+      transform-origin: top;
+      animation: doorOpen 1.1s cubic-bezier(.2,.9,.2,1) forwards;
+    }
+
+    .door__label {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 16px 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.35);
+      color: rgba(232,238,255,.92);
+      font-size: 14px;
+      letter-spacing: .02em;
+    }
+    .door__label b { color: #e8eeff; }
+
+    @keyframes doorOpen {
+      0%   { transform: translateY(0) scaleY(1); }
+      100% { transform: translateY(-100%) scaleY(1); }
+    }
   </style>
 </head>
 <body>
+  <!-- Garageport overlay -->
+  <div class="door" aria-hidden="true">
+    <div class="door__panel"></div>
+    <div class="door__label">Öppnar… <b>Hello World</b> via <b>Nginx</b> 🚪</div>
+  </div>
+
   <div class="wrap">
     <div class="badge"><span class="dot"></span> Live • ${esc(now)} • Reverse proxy: <span class="hl">Nginx</span> <span class="spark"></span></div>
 
@@ -307,6 +372,41 @@ user-agent:      ${esc(req.headers["user-agent"] || "—")}
       </aside>
     </div>
   </div>
+
+  <script>
+    window.addEventListener("load", () => {
+      const door = document.querySelector(".door");
+      const wrap = document.querySelector(".wrap");
+      if (!wrap) return;
+
+      // Om du vill: visa animation bara en gång per session
+      // (avkommentera detta block)
+      /*
+      if (sessionStorage.getItem("introSeen") === "1") {
+        if (door) door.remove();
+        wrap.classList.add("visible");
+        return;
+      }
+      sessionStorage.setItem("introSeen", "1");
+      */
+
+      if (!door) {
+        wrap.classList.add("visible");
+        return;
+      }
+
+      const totalMs = 1100; // matchar doorOpen 1.1s
+      setTimeout(() => {
+        door.style.transition = "opacity 0.35s ease";
+        door.style.opacity = "0";
+
+        setTimeout(() => {
+          door.remove();
+          wrap.classList.add("visible");
+        }, 350);
+      }, totalMs);
+    });
+  </script>
 </body>
 </html>`);
 });
