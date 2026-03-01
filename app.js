@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 80;
+const port = 3000;
 
 app.get('/', (req, res) => {
   res.send('<h1>Hello World! Denna sida körs på min Contabo VPS via ett deploy-skript.</h1>');
