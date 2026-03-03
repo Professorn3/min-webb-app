@@ -304,7 +304,7 @@ user-agent:      ${esc(req.headers["user-agent"] || "—")}
       </aside>
     </div>
   </div>
-
+  
 <script>
   // --- Intro animation (garage door) ---
   (function runIntro(){
@@ -339,7 +339,6 @@ user-agent:      ${esc(req.headers["user-agent"] || "—")}
   updateClock();
   setInterval(updateClock, 1000);
 </script>
-
 </body>
 </html>`);
 });
