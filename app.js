@@ -200,25 +200,6 @@ app.get("/", (req, res) => {
       border-radius: 4px;
       transform: rotate(20deg);
     }
-.intro{
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(0,0,0,.6);
-  overflow: hidden;
-}
-
-.intro__panel{
-  position:absolute;
-  inset:0;
-  background: linear-gradient(180deg, #0b1020 0%, #0e1530 100%);
-  transform: translateY(0);
-  transition: transform 1.4s cubic-bezier(.77,0,.18,1);
-}
-
-.intro.play .intro__panel{
-  transform: translateY(-100%);
-}
 </style>
 </head>
 <body>
@@ -357,11 +338,6 @@ user-agent:      ${esc(req.headers["user-agent"] || "—")}
   updateClock();
   setInterval(updateClock, 1000);
 </script>
-
-<div id="intro" class="intro">
-  <div class="intro__panel"></div>
-</div>
-
 </body> 
 </html>`);
 });
