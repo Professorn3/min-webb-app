@@ -305,19 +305,40 @@ user-agent:      ${esc(req.headers["user-agent"] || "—")}
     </div>
   </div>
 
-  <script>
-    function updateClock() {
-      const el = document.getElementById("clock");
-      if (!el) return;
+<script>
+  // --- Intro animation (garage door) ---
+  (function runIntro(){
+    const intro = document.getElementById("intro");
+    if (!intro) return;
 
-      el.textContent = new Date().toLocaleString("sv-SE", {
-        timeZone: "Europe/Stockholm"
-      });
+    if (sessionStorage.getItem("introPlayed") === "1") {
+      intro.remove();
+      return;
     }
+    sessionStorage.setItem("introPlayed", "1");
 
-    updateClock();
-    setInterval(updateClock, 1000);
-  </script>
+    document.documentElement.style.overflow = "hidden";
+    setTimeout(() => intro.classList.add("play"), 30);
+
+    setTimeout(() => {
+      intro.remove();
+      document.documentElement.style.overflow = "";
+    }, 1500);
+  })();
+
+  // --- Din klocka ---
+  function updateClock() {
+    const el = document.getElementById("clock");
+    if (!el) return;
+
+    el.textContent = new Date().toLocaleString("sv-SE", {
+      timeZone: "Europe/Stockholm"
+    });
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
 
 </body>
 </html>`);
