@@ -4,6 +4,7 @@ Akam
 
 
 Uppgift 1
+
 Serverinstallation och säkring
 
 Jag installerade Ubuntu 24.04 LTS på en VPS hos Contabo. Root-inloggning via SSH inaktiverades (PermitRootLogin no i /etc/ssh/sshd_config), en dedikerad användare deploy skapades enligt principen om minsta privilegium (PoLP), och Fail2ban installerades för att blockera IP-adresser vid upprepade misslyckade inloggningsförsök.
