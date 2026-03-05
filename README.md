@@ -32,39 +32,41 @@ Ett automatiserat skript sköter hela flödet vid uppdatering:
 
     Startar om applikationen via PM2 (pm2 restart all).
 
-Linux
+Linux: Arkitektur & Administration
 
-    Filsystem: En trädstruktur som utgår från roten /.
+    Filsystem: Hierarkisk trädstruktur utgående från / (root). Viktiga kataloger: /etc (systemkonfiguration), /var/log (händelseloggning), /home (användardata) och /bin (binärfiler).
 
-    Viktiga mappar: /etc (konfiguration), /home (användardata), /var/log (loggfiler).
+    Rättighetsmodell: Granulär kontroll via read, write, execute (rwx) för användare, grupp och övriga. sudo används för temporär eskalering till root-privilegier för administrativa uppgifter.
 
-    Behörighet: Hanteras via rwx (read, write, execute) för ägare, grupp och övriga via kommandot chmod.
+    Länkning: Symboliska länkar fungerar som sökvägspekare (genvägar), medan hårda länkar pekar direkt på filens fysiska datablock (inode).
 
-Windows Server
+    Montering: Processen att logiskt integrera externa filsystem eller lagringsenheter i systemets befintliga katalogträd.
 
-    Filsystem: Använder främst NTFS för säkerhet och stora volymer.
+Windows Server: Ekosystem & Kontroll
 
-    Viktiga mappar: C:\Windows, C:\Users, C:\Program Files.
+    Struktur: Utnyttjar NTFS-filsystemet för metadata och transaktionsstöd. Centrala mappar: C:\Windows (OS), C:\Users (profiler) och C:\Program Files (applikationer).
 
-    Behörighet: Detaljerad hantering via Access Control Lists (ACL) för användare och grupper.
+    ACL (Access Control Lists): Möjliggör detaljerad behörighetsstyrning för specifika säkerhetsobjekt, ofta med arv från överliggande kataloger.
 
-Nätverk
+    Övervakning: Resursutnyttjande analyseras via Task Manager (realtid) och Event Viewer (historisk loggdata).
 
-    IP-adress: En logisk adress (t.ex. 167.86.126.224) för att identifiera enheter på nätverk.
+Nätverksteknik: OSI-lager & Protokoll
 
-    MAC-adress: En unik fysisk adress bunden till nätverkskortet.
+    Adressering: IP-adress (Lager 3) är en logisk identifierare för routing. MAC-adress (Lager 2) är en unik fysisk hårdvaruadress för lokal kommunikation.
 
-    DNS: Översätter domännamn till IP-adresser, fungerar som internetets telefonbok.
+    Subnätmask: Definierar gränsen mellan nätverks- och värddel i en IP-adress för att avgränsa lokala subnät.
 
-Virtualisering
+    DNS: Distribuerat system som mappar domännamn (FQDN) till IP-adresser.
 
-    Syfte: Att köra flera isolerade virtuella maskiner på en fysisk server för att spara resurser och isolera tjänster.
+    Switch vs Router: Switchen sammanlänkar enheter inom ett LAN via MAC-adresser; routern dirigerar trafik mellan skilda nätverk via IP-adresser.
 
-    Funktion: En hypervisor delar upp hårdvarans resurser mellan de olika miljöerna.
+Virtualisering, Skripting & Säkerhet
 
-Skripting
+    Virtualisering: Abstraktion av hårdvara via en hypervisor för att exekvera multipla isolerade gäst-OS på en fysisk värd.
 
-    Används för att automatisera administration och säkerhetsarbete. Det minskar risken för mänskliga fel och säkerställer att konfigurationer är konsekventa.
+    Automation: Skripting (Bash/PowerShell) eliminerar manuella fel, säkerställer reproducerbarhet och effektiviserar konfigurationshantering.
+
+    Säkerhetsstrategi: Implementering av Defense in Depth genom brandväggar, minsta behörighets-principen (PoLP) och proaktiv patchhantering.
 
 Säkerhet
 
