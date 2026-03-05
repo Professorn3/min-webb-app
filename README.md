@@ -13,9 +13,9 @@ Brandvägg (UFW)
 Enbart nödvändiga portar är öppna – port 22 för SSH och port 80 för HTTP. Allt annat är blockerat.
 bash
 
-sudo ufw allow 22/tcp
+´´´sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
-sudo ufw enable
+sudo ufw enable´´´
 
 Nginx – Reverse Proxy
 
