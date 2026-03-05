@@ -1,5 +1,8 @@
 ### http://167.86.126.224/
 
+
+Uppgift 1
+
 Serverinstallation och säkring
 Ubuntu 24.04 LTS installerades på en VPS hos Contabo. För att förbättra säkerheten inaktiverades root-inloggning via SSH genom inställningen PermitRootLogin no i /etc/ssh/sshd_config. I stället skapades en separat användare, deploy, enligt principen om minsta privilegium (PoLP), vilket minskar risken för systemkompromettering. För att skydda mot brute-force-attacker installerades även Fail2ban, som automatiskt blockerar IP-adresser efter upprepade misslyckade inloggningsförsök.
 
@@ -15,7 +18,7 @@ Ett Bash-skript automatiserar deploymentprocessen. Skriptet hämtar den senaste 
 Felsökning
 Under projektet uppstod en konflikt där en Docker-container (Webtop/Selkies) redan använde port 3000. Den aktiva processen identifierades med kommandot sudo lsof -i :3000. Efter att containern stoppats frigjordes porten och applikationen kunde startas korrekt.
 
-Uppgift 2: Teorifrågor
+Uppgift 2
 
 Linux – Filsystem
 Linux använder ett hierarkiskt filsystem som utgår från roten /. Viktiga kataloger inkluderar /etc för systemkonfiguration, /home för användardata, /var/log för loggfiler samt /bin för körbara systemprogram. Strukturen gör systemet organiserat och underlättar administration.
