@@ -1,61 +1,66 @@
 ### http://167.86.126.224/
 
-Uppgift 1 
 Serverinstallation och säkring
-Jag installerade Ubuntu 24.04 LTS på en VPS hos Contabo. Root-inloggning via SSH inaktiverades (PermitRootLogin no i /etc/ssh/sshd_config), en dedikerad användare deploy skapades enligt principen om minsta privilegium (PoLP), och Fail2ban installerades för att blockera IP-adresser vid upprepade misslyckade inloggningsförsök.
+Ubuntu 24.04 LTS installerades på en VPS hos Contabo. För att förbättra säkerheten inaktiverades root-inloggning via SSH genom inställningen PermitRootLogin no i /etc/ssh/sshd_config. I stället skapades en separat användare, deploy, enligt principen om minsta privilegium (PoLP), vilket minskar risken för systemkompromettering. För att skydda mot brute-force-attacker installerades även Fail2ban, som automatiskt blockerar IP-adresser efter upprepade misslyckade inloggningsförsök.
+
 Brandvägg (UFW)
-Enbart nödvändiga portar är öppna – port 22 för SSH och port 80 för HTTP. Allt annat är blockerat.
-bashsudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw enable
+Serverns nätverkstrafik begränsades med hjälp av Uncomplicated Firewall (UFW). Endast nödvändiga portar öppnades: port 22 för SSH och port 80 för HTTP. All övrig trafik blockeras som standard, vilket minskar attackytan och säkerställer att endast relevanta tjänster är åtkomliga från internet.
+
 Nginx – Reverse Proxy
-Applikationen körs internt på port 3000. Nginx tar emot publik trafik på port 80 och vidarebefordrar den till applikationen via loopback, vilket döljer den interna porten från internet.
-nginxserver {
-    listen 80;
-    server_name 167.86.126.224;
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_set_header Host $host;
-    }
-}
+Webbapplikationen körs internt på port 3000. Nginx används som reverse proxy och tar emot extern trafik på port 80. Den vidarebefordrar sedan förfrågningar till applikationen via loopback-adressen 127.0.0.1:3000. På så sätt exponeras inte den interna applikationsporten direkt mot internet, vilket förbättrar säkerheten och ger bättre kontroll över inkommande trafik.
+
 Deploy-skript (deploy.sh)
-Skriptet automatiserar hela deploymentflödet: hämtar senaste koden från GitHub, installerar beroenden och startar om appen via PM2. PM2 säkerställer att appen startar automatiskt vid omstart av servern.
-bash#!/bin/bash
-cd /home/deploy/min-webb-app
-git pull origin main
-npm install
-pm2 restart all || pm2 start app.js --name "min-app"
+Ett Bash-skript automatiserar deploymentprocessen. Skriptet hämtar den senaste koden från GitHub, installerar nödvändiga beroenden och startar eller startar om applikationen via PM2. PM2 säkerställer dessutom att applikationen startar automatiskt om servern startas om, vilket bidrar till högre tillgänglighet.
+
 Felsökning
-Under projektet ockuperade en Docker-container (Webtop/Selkies) port 3000. Processen identifierades med sudo lsof -i :3000, containern stoppades och applikationen kunde därefter starta korrekt.
+Under projektet uppstod en konflikt där en Docker-container (Webtop/Selkies) redan använde port 3000. Den aktiva processen identifierades med kommandot sudo lsof -i :3000. Efter att containern stoppats frigjordes porten och applikationen kunde startas korrekt.
 
 Uppgift 2: Teorifrågor
+
 Linux – Filsystem
-Linux använder en hierarkisk trädstruktur utgående från / (root). Viktiga kataloger: /etc (systemkonfiguration), /home (användardata), /var/log (loggar), /bin (körbara filer).
+Linux använder ett hierarkiskt filsystem som utgår från roten /. Viktiga kataloger inkluderar /etc för systemkonfiguration, /home för användardata, /var/log för loggfiler samt /bin för körbara systemprogram. Strukturen gör systemet organiserat och underlättar administration.
+
 Linux – Behörigheter och sudo
-Behörigheter definieras av read (r), write (w) och execute (x) för tre kategorier: ägare, grupp och övriga. Ändras med chmod. Kommandot sudo tillåter temporär eskalering till root-privilegier utan att användaren permanent ges full systemkontroll.
+Behörigheter i Linux definieras genom tre rättigheter: read (r), write (w) och execute (x), för tre kategorier: ägare, grupp och övriga användare. Dessa ändras med kommandot chmod. Med kommandot sudo kan en användare temporärt köra kommandon med root-privilegier utan att ha permanent administratörsbehörighet.
+
 Linux – Symboliska och hårda länkar
-En symbolisk länk (symlink) pekar på en annan fils sökväg och slutar fungera om originalfilen tas bort. En hård länk pekar direkt på filens datablock (inode), vilket innebär att datan överlever även om originalfilnamnet raderas.
+En symbolisk länk (symlink) är en referens till en annan fils sökväg och blir ogiltig om originalfilen tas bort. En hård länk pekar direkt på filens inode och därmed på själva datainnehållet, vilket gör att filen finns kvar så länge minst en länk existerar.
+
 Linux – Montering (Mounting)
-Montering innebär att ett externt filsystem, exempelvis en hårddisk eller USB-minne, integreras i katalogträdet vid en specifik monteringspunkt. I Linux dyker enheter upp som kataloger, till skillnad från Windows där de tilldelas enhetsbokstäver.
+Montering innebär att ett externt filsystem, exempelvis en hårddisk eller USB-enhet, kopplas in i Linux katalogstruktur via en monteringspunkt. Till skillnad från Windows använder Linux inte enhetsbokstäver, utan enheter visas som kataloger i filsystemträdet.
+
 Windows Server – Filsystem
-Windows Server använder primärt NTFS, som stöder stora volymer, metadata och transaktionsloggning. Viktiga kataloger: C:\Windows (OS), C:\Users (profiler), C:\Program Files (program), C:\Windows\System32 (systembibliotek).
+Windows Server använder främst filsystemet NTFS. NTFS stöder stora lagringsvolymer, metadata och transaktionsloggning. Centrala kataloger är C:\Windows för operativsystemet, C:\Users för användarprofiler, C:\Program Files för installerade program och C:\Windows\System32 för viktiga systembibliotek.
+
 Windows Server – Behörigheter
-Behörigheter styrs via Access Control Lists (ACL) där varje fil och mapp har en lista som specificerar vilka användare eller grupper som har vilka rättigheter. Rättigheter kan ärvas från överliggande mappar eller sättas unikt per objekt, och hanteras centralt via Active Directory i domänmiljöer.
+Behörigheter hanteras via Access Control Lists (ACL). Varje fil eller mapp har en lista som definierar vilka användare eller grupper som har vilka rättigheter. Behörigheter kan ärvas från överordnade mappar eller definieras individuellt och administreras ofta centralt via Active Directory i en domänmiljö.
+
 Windows Server – Resursövervakning
-Task Manager ger realtidsöversikt av CPU, RAM och disk per process. Resource Monitor erbjuder djupare nätverks- och minnesanalys. Event Viewer används för granskning av säkerhets- och systemloggar, och Performance Monitor möjliggör historisk analys av systemprestanda.
+Systemprestanda kan analyseras med flera verktyg. Task Manager visar resursanvändning i realtid per process, Resource Monitor ger mer detaljerad analys av nätverk och minne, Event Viewer används för att granska system- och säkerhetsloggar och Performance Monitor möjliggör långsiktig övervakning av systemets prestanda.
+
 Nätverk – IP-adress
-En IP-adress är en logisk identifierare för ett nätverksgränssnitt som används för att dirigera trafik till rätt destination (OSI-lager 3). Till skillnad från MAC-adressen är den konfigurerbar och kan ändras.
+En IP-adress är en logisk identifierare för ett nätverksgränssnitt och används för att dirigera datapaket mellan nätverk enligt OSI model lager 3. Till skillnad från MAC-adresser kan IP-adresser ändras genom nätverkskonfiguration.
+
 Nätverk – MAC-adress
-En MAC-adress är en unik fysisk hårdvaruidentifierare inbränd i nätverkskortet vid tillverkning. Den används för kommunikation inom lokala nätverk (OSI-lager 2) och kan inte självständigt dirigera trafik mellan olika nätverk.
+En MAC-adress är en unik fysisk identifierare som tilldelas ett nätverkskort av tillverkaren. Den används för kommunikation inom lokala nätverk på OSI-modellens lager 2 och används inte för routing mellan olika nätverk.
+
 Nätverk – Subnätmask
-En subnätmask delar upp en IP-adress i en nätverksdel och en värddel, och definierar vilka adresser som tillhör det lokala subnätet. Exempelvis innebär 255.255.255.0 att de tre första oktetterna identifierar nätverket och den sista identifierar värden.
+En subnätmask delar upp en IP-adress i en nätverksdel och en värddel. Den avgör vilka adresser som tillhör samma lokala nätverk. Till exempel innebär masken 255.255.255.0 att de tre första oktetterna representerar nätverket och den sista identifierar en specifik enhet.
+
 Nätverk – DNS
-DNS (Domain Name System) översätter domännamn till IP-adresser via en global hierarki av namnservrar. Utan DNS skulle användare behöva memorera IP-adresser för varje tjänst.
+Domain Name System översätter domännamn till IP-adresser genom ett hierarkiskt system av namnservrar. Detta gör att användare kan använda lättlästa domännamn i stället för att behöva komma ihåg numeriska IP-adresser.
+
 Nätverk – Router vs Switch
-En switch sammankopplar enheter inom ett LAN baserat på MAC-adresser (lager 2). En router dirigerar trafik mellan olika nätverk baserat på IP-adresser (lager 3) och är den enhet som förbinder det lokala nätverket med internet.
+En switch kopplar samman enheter inom ett lokalt nätverk och skickar trafik baserat på MAC-adresser. En router kopplar ihop olika nätverk och dirigerar trafik baserat på IP-adresser, vilket gör den central för kommunikation mellan ett lokalt nätverk och internet.
+
 Virtualisering
-Virtualisering abstraherar fysisk hårdvara via en hypervisor (t.ex. Proxmox eller VMware) för att köra flera isolerade virtuella maskiner på en fysisk värd. Syftet är att maximera resursutnyttjandet, sänka hårdvarukostnader och förenkla skalbarhet.
+Virtualisering innebär att fysisk hårdvara abstraheras genom en hypervisor, exempelvis Proxmox VE eller VMware ESXi, så att flera virtuella maskiner kan köras på samma fysiska server. Detta förbättrar resursutnyttjande, minskar hårdvarukostnader och förenklar skalning av system.
+
 Skripting
-Bash- och PowerShell-skript automatiserar repetitiva uppgifter inom systemadministration, säkerhetsarbete och konfigurationshantering. Det eliminerar mänskliga fel och säkerställer att servrar konfigureras konsekvent. I det här projektet hanterar deploy.sh hela deploymentprocessen automatiskt.
+Skript i Bash eller PowerShell används för att automatisera administrativa uppgifter, systemkonfiguration och deploymentprocesser. Automatisering minskar risken för mänskliga fel och säkerställer att servrar konfigureras konsekvent. I detta projekt användes skriptet deploy.sh för att automatisera hela deploymentflödet.
+
 Säkerhet vid serveruppsättning
-Hög säkerhet kräver flera samverkande lager: brandvägg med enbart nödvändiga portar öppna, inaktiverad root-login via SSH, brute force-skydd med Fail2ban, regelbundna säkerhetsuppdateringar, reverse proxy för att dölja interna portar och tillämpning av Principle of Least Privilege för alla användare och processer. Tillsammans skapar detta ett Defense in Depth-skydd där inget enskilt misslyckat skikt komprometterar hela systemet.
+En säker servermiljö bygger på flera skyddslager enligt principen Defense in Depth. Detta inkluderar brandvägg med endast nödvändiga portar öppna, inaktiverad root-inloggning via SSH, skydd mot brute-force-attacker med Fail2ban, regelbundna säkerhetsuppdateringar, användning av reverse proxy för att dölja interna portar samt tillämpning av Principle of Least Privilege. Tillsammans minskar dessa åtgärder risken för intrång och begränsar konsekvenserna om ett skyddslager skulle fallera.
+
+<img width="3350" height="1790" alt="image" src="https://github.com/user-attachments/assets/5b2ac652-23f8-4900-90a4-f3016df3eac1" />
+
