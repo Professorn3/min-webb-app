@@ -32,7 +32,6 @@ Ett automatiserat skript sköter hela flödet vid uppdatering:
 
     Startar om applikationen via PM2 (pm2 restart all).
 
-Uppgift 2: Teorifrågor
 Linux
 
     Filsystem: En trädstruktur som utgår från roten /.
