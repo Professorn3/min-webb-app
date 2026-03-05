@@ -1,72 +1,92 @@
-Dokumentation
-Server-IP: 167.86.126.224
+Individuell Inlämningsuppgift – OS Windows & Linux (20 yhp)
 
-Detta projekt omfattar uppsättningen av en säker webbmiljö på en Linux-server (Ubuntu 24.04) för att hosta en Node.js-applikation. Systemet använder Nginx som reverse proxy och automatiserad deployment via Bash-skript.
-Uppgift 1: Praktiskt genomförande
-Server & Säkerhet
+Namn: Akam | Datum: 5 mars 2026 | Server-IP: 167.86.126.224
+Uppgift 1: Sätt upp webbserver
+Serverinstallation och säkring
 
-Servern körs på en VPS hos Contabo. För att säkra systemet har root-inloggning inaktiverats i /etc/ssh/sshd_config (PermitRootLogin no). Fail2ban är installerat för att automatiskt blockera IP-adresser vid misslyckade inloggningsförsök. En begränsad användare vid namn deploy hanterar driften för att följa principen om minsta behörighet.
+Jag installerade Ubuntu 24.04 LTS på en VPS hos Contabo. Root-inloggning via SSH inaktiverades (PermitRootLogin no i /etc/ssh/sshd_config), en dedikerad användare deploy skapades enligt principen om minsta privilegium (PoLP), och Fail2ban installerades för att blockera IP-adresser vid upprepade misslyckade inloggningsförsök.
 Brandvägg (UFW)
 
-Brandväggen är aktiv och tillåter endast nödvändig trafik:
+Enbart nödvändiga portar är öppna – port 22 för SSH och port 80 för HTTP. Allt annat är blockerat.
+bash
 
-    sudo ufw allow 22/tcp (SSH)
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw enable
 
-    sudo ufw allow 80/tcp (HTTP)
+Nginx – Reverse Proxy
 
-    sudo ufw enable
+Applikationen körs internt på port 3000. Nginx tar emot publik trafik på port 80 och vidarebefordrar den till applikationen via loopback, vilket döljer den interna porten från internet.
+nginx
 
-Nginx Reverse Proxy
+server {
+    listen 80;
+    server_name 167.86.126.224;
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+    }
+}
 
-Nginx lyssnar på port 80 och skickar trafiken vidare till applikationen som körs lokalt på port 3000. Detta skyddar Node.js-processen från direkt exponering.
-Konfigurationslogik: proxy_pass http://127.0.0.1:3000.
 Deploy-skript (deploy.sh)
 
-Ett automatiserat skript sköter hela flödet vid uppdatering:
+Skriptet automatiserar hela deploymentflödet: hämtar senaste koden från GitHub, installerar beroenden och startar om appen via PM2. PM2 säkerställer att appen startar automatiskt vid omstart av servern.
+bash
 
-    Navigerar till projektmappen.
+#!/bin/bash
+cd /home/deploy/min-webb-app
+git pull origin main
+npm install
+pm2 restart all || pm2 start app.js --name "min-app"
 
-    Hämtar senaste koden från GitHub (git pull).
+Felsökning
 
-    Installerar beroenden (npm install).
+Under projektet ockuperade en Docker-container (Webtop/Selkies) port 3000. Processen identifierades med sudo lsof -i :3000, containern stoppades och applikationen kunde därefter starta korrekt.
+Uppgift 2: Teorifrågor
+Linux – Filsystem
 
-    Startar om applikationen via PM2 (pm2 restart all).
+Linux använder en hierarkisk trädstruktur utgående från / (root). Viktiga kataloger: /etc (systemkonfiguration), /home (användardata), /var/log (loggar), /bin (körbara filer).
+Linux – Behörigheter och sudo
 
-Linux: Arkitektur & Administration
+Behörigheter definieras av read (r), write (w) och execute (x) för tre kategorier: ägare, grupp och övriga. Ändras med chmod. Kommandot sudo tillåter temporär eskalering till root-privilegier utan att användaren permanent ges full systemkontroll.
+Linux – Symboliska och hårda länkar
 
-Filsystem: Hierarkisk trädstruktur utgående från / (root). Viktiga kataloger: /etc (systemkonfiguration), /var/log (händelseloggning), /home (användardata) och /bin (binärfiler).
-Rättighetsmodell: Granulär kontroll via read, write, execute (rwx) för användare, grupp och övriga. sudo används för temporär eskalering till root-privilegier för administrativa uppgifter.
+En symbolisk länk (symlink) pekar på en annan fils sökväg och slutar fungera om originalfilen tas bort. En hård länk pekar direkt på filens datablock (inode), vilket innebär att datan överlever även om originalfilnamnet raderas.
+Linux – Montering (Mounting)
 
-Länkning: Symboliska länkar fungerar som sökvägspekare (genvägar), medan hårda länkar pekar direkt på filens fysiska datablock (inode).
+Montering innebär att ett externt filsystem, exempelvis en hårddisk eller USB-minne, integreras i katalogträdet vid en specifik monteringspunkt. I Linux dyker enheter upp som kataloger, till skillnad från Windows där de tilldelas enhetsbokstäver.
+Windows Server – Filsystem
 
-Montering: Processen att logiskt integrera externa filsystem eller lagringsenheter i systemets befintliga katalogträd.
+Windows Server använder primärt NTFS, som stöder stora volymer, metadata och transaktionsloggning. Viktiga kataloger: C:\Windows (OS), C:\Users (profiler), C:\Program Files (program), C:\Windows\System32 (systembibliotek).
+Windows Server – Behörigheter
 
-Windows Server: Ekosystem & Kontroll
+Behörigheter styrs via Access Control Lists (ACL) där varje fil och mapp har en lista som specificerar vilka användare eller grupper som har vilka rättigheter. Rättigheter kan ärvas från överliggande mappar eller sättas unikt per objekt, och hanteras centralt via Active Directory i domänmiljöer.
+Windows Server – Resursövervakning
 
-Struktur: Utnyttjar NTFS-filsystemet för metadata och transaktionsstöd. Centrala mappar: C:\Windows (OS), C:\Users (profiler) och C:\Program Files (applikationer).
+Task Manager ger realtidsöversikt av CPU, RAM och disk per process. Resource Monitor erbjuder djupare nätverks- och minnesanalys. Event Viewer används för granskning av säkerhets- och systemloggar, och Performance Monitor möjliggör historisk analys av systemprestanda.
+Nätverk – IP-adress
 
-ACL (Access Control Lists): Möjliggör detaljerad behörighetsstyrning för specifika säkerhetsobjekt, ofta med arv från överliggande kataloger.
+En IP-adress är en logisk identifierare för ett nätverksgränssnitt som används för att dirigera trafik till rätt destination (OSI-lager 3). Till skillnad från MAC-adressen är den konfigurerbar och kan ändras.
+Nätverk – MAC-adress
 
-Övervakning: Resursutnyttjande analyseras via Task Manager (realtid) och Event Viewer (historisk loggdata).
+En MAC-adress är en unik fysisk hårdvaruidentifierare inbränd i nätverkskortet vid tillverkning. Den används för kommunikation inom lokala nätverk (OSI-lager 2) och kan inte självständigt dirigera trafik mellan olika nätverk.
+Nätverk – Subnätmask
 
-Nätverksteknik: OSI-lager & Protokoll
+En subnätmask delar upp en IP-adress i en nätverksdel och en värddel, och definierar vilka adresser som tillhör det lokala subnätet. Exempelvis innebär 255.255.255.0 att de tre första oktetterna identifierar nätverket och den sista identifierar värden.
+Nätverk – DNS
 
-Adressering: IP-adress (Lager 3) är en logisk identifierare för routing. MAC-adress (Lager 2) är en unik fysisk hårdvaruadress för lokal kommunikation.
+DNS (Domain Name System) översätter domännamn till IP-adresser via en global hierarki av namnservrar. Utan DNS skulle användare behöva memorera IP-adresser för varje tjänst.
+Nätverk – Router vs Switch
 
-Subnätmask: Definierar gränsen mellan nätverks- och värddel i en IP-adress för att avgränsa lokala subnät.
+En switch sammankopplar enheter inom ett LAN baserat på MAC-adresser (lager 2). En router dirigerar trafik mellan olika nätverk baserat på IP-adresser (lager 3) och är den enhet som förbinder det lokala nätverket med internet.
+Virtualisering
 
-DNS: Distribuerat system som mappar domännamn (FQDN) till IP-adresser.
+Virtualisering abstraherar fysisk hårdvara via en hypervisor (t.ex. Proxmox eller VMware) för att köra flera isolerade virtuella maskiner på en fysisk värd. Syftet är att maximera resursutnyttjandet, sänka hårdvarukostnader och förenkla skalbarhet.
+Skripting
 
-Switch vs Router: Switchen sammanlänkar enheter inom ett LAN via MAC-adresser; routern dirigerar trafik mellan skilda nätverk via IP-adresser.
+Bash- och PowerShell-skript automatiserar repetitiva uppgifter inom systemadministration, säkerhetsarbete och konfigurationshantering. Det eliminerar mänskliga fel och säkerställer att servrar konfigureras konsekvent. I det här projektet hanterar deploy.sh hela deploymentprocessen automatiskt.
+Säkerhet vid serveruppsättning
 
-Virtualisering, Skripting & Säkerhet
+Hög säkerhet kräver flera samverkande lager: brandvägg med enbart nödvändiga portar öppna, inaktiverad root-login via SSH, brute force-skydd med Fail2ban, regelbundna säkerhetsuppdateringar, reverse proxy för att dölja interna portar och tillämpning av Principle of Least Privilege för alla användare och processer. Tillsammans skapar detta ett Defense in Depth-skydd där inget enskilt misslyckat skikt komprometterar hela systemet.
 
-Virtualisering: Abstraktion av hårdvara via en hypervisor för att exekvera multipla isolerade gäst-OS på en fysisk värd.
-
-Automation: Skripting (Bash/PowerShell) eliminerar manuella fel, säkerställer reproducerbarhet och effektiviserar konfigurationshantering.
-
-Säkerhetsstrategi: Implementering av Defense in Depth genom brandväggar, minsta behörighets-principen (PoLP) och proaktiv patchhantering.
-
-Säkerhet
-
-Vid serveruppsättning krävs en kombination av brandväggar, minsta behörighet, regelbundna uppdateringar och krypterad kommunikation för att säkerställa hög säkerhet.
+<img width="3350" height="1790" alt="image" src="https://github.com/user-attachments/assets/53ec8804-f28a-49b7-993f-08deee264278" />
