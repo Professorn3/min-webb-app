@@ -1,7 +1,9 @@
-Individuell Inlämningsuppgift – OS Windows & Linux (20 yhp)
+###http://167.86.126.224/
 
-Namn: Akam | Datum: 5 mars 2026 | Server-IP: 167.86.126.224
-Uppgift 1: Sätt upp webbserver
+Akam 
+
+
+Uppgift 1
 Serverinstallation och säkring
 
 Jag installerade Ubuntu 24.04 LTS på en VPS hos Contabo. Root-inloggning via SSH inaktiverades (PermitRootLogin no i /etc/ssh/sshd_config), en dedikerad användare deploy skapades enligt principen om minsta privilegium (PoLP), och Fail2ban installerades för att blockera IP-adresser vid upprepade misslyckade inloggningsförsök.
