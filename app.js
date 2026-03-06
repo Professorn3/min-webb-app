@@ -4,7 +4,6 @@ const app = express();
 // Kör appen internt på 3000 (Nginx tar 80)
 const PORT = process.env.PORT || 3000;
 
-// Liten helper för att safely visa text i HTML (om du vill fylla på senare)
 const esc = (s) =>
   String(s)
     .replaceAll("&", "&amp;")
@@ -16,7 +15,6 @@ const esc = (s) =>
 app.get("/", (req, res) => {
   const now = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Stockholm" });
 
-  // Justera detaljerna nedan så de matchar exakt din setup/rapport
   const details = {
     server: {
       os: "Ubuntu 24.04 (VPS)",
@@ -325,7 +323,7 @@ user-agent:      ${esc(req.headers["user-agent"] || "—")}
     }, 1500);
   })();
 
-  // --- Din klocka ---
+  // KLOCKAN bonus 
   function updateClock() {
     const el = document.getElementById("clock");
     if (!el) return;
